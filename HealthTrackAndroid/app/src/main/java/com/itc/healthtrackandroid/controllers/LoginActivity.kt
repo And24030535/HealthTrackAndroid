@@ -1,0 +1,119 @@
+package com.itc.healthtrackandroid.controllers
+
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
+import com.itc.healthtrackandroid.R
+import com.itc.healthtrackandroid.dao.GenericDAO
+import com.itc.healthtrackandroid.dao.OnSingleDataLoadedListener
+import com.itc.healthtrackandroid.models.User
+
+/**
+ * Pantalla de inicio de sesion — solo para pacientes.
+ * Flujo: correo + contrasena → autenticacion Firebase → DashboardActivity.
+ */
+class LoginActivity : AppCompatActivity() {
+
+    private lateinit var emailEditText: EditText
+    private lateinit var passwordEditText: EditText
+    private lateinit var loginButton: Button
+    private lateinit var registerTextView: TextView
+
+    private lateinit var auth: FirebaseAuth
+    private lateinit var userDao: GenericDAO<User>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_login)
+
+        auth    = FirebaseAuth.getInstance()
+        userDao = GenericDAO(User::class.java, "users")
+
+        emailEditText    = findViewById(R.id.emailEditText)
+        passwordEditText = findViewById(R.id.passwordEditText)
+        loginButton      = findViewById(R.id.loginButton)
+        registerTextView = findViewById(R.id.registerTextView)
+
+        loginButton.setOnClickListener { performLogin() }
+
+        registerTextView.setOnClickListener {
+            startActivity(Intent(this, RegisterActivity::class.java))
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // LOGIN
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private fun performLogin() {
+        val email    = emailEditText.text.toString().trim()
+        val password = passwordEditText.text.toString().trim()
+
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Por favor ingresa correo y contraseña", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        loginButton.isEnabled = false
+
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    val userId = auth.currentUser?.uid
+                    if (userId != null) fetchUserAndNavigate(userId)
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Error de autenticación: ${task.exception?.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    loginButton.isEnabled = true
+                }
+            }
+    }
+
+    private fun fetchUserAndNavigate(userId: String) {
+        userDao.getById(userId, object : OnSingleDataLoadedListener<User> {
+
+            override fun onSuccess(data: User?) {
+                if (data == null) {
+                    Toast.makeText(
+                        this@LoginActivity,
+                        "Usuario no encontrado en la base de datos",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    loginButton.isEnabled = true
+                    return
+                }
+                navigateToDashboard(data)
+            }
+
+            override fun onFailure(error: Exception) {
+                Toast.makeText(
+                    this@LoginActivity,
+                    "Error al obtener datos del usuario: ${error.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+                loginButton.isEnabled = true
+            }
+        })
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // NAVEGACION
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private fun navigateToDashboard(data: User) {
+        val intent = Intent(this, DashboardActivity::class.java)
+        intent.putExtra("USER_ROLE", data.role)
+        intent.putExtra("USER_UID",  data.uid)
+        intent.putExtra("USER_NAME", "${data.firstName} ${data.lastName}")
+        startActivity(intent)
+        finish()
+    }
+}
