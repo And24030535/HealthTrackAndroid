@@ -54,73 +54,29 @@ class GenericDAO<T : Any>(
     }
 
     /**
-     * Obtiene todos los documentos dentro de una coleccion.
-     */
-    fun getAll(callback: OnDataLoadedListener<T>) {
-        db.collection(collectionName).get()
-            .addOnSuccessListener { result ->
-                // Creamos una lista vacia
-                val list = mutableListOf<T>()
-                // Recorremos todos los resultados obtenidos
-                for (document in result) {
-                    val entity = document.toObject(entityClass)
-                    // Los agregamos a la lista
-                    list.add(entity)
-                }
-                // Devolvemos la lista llena
-                callback.onSuccess(list)
-            }
-            .addOnFailureListener { exception -> callback.onFailure(exception) }
-    }
-
-    /**
-     * Obtiene una lista de documentos filtrando por una caracteristica especifica.
-     * Ejemplo: fieldName = "role", value = "patient"
-     */
-    fun getByField(fieldName: String, value: Any, callback: OnDataLoadedListener<T>) {
-        db.collection(collectionName).whereEqualTo(fieldName, value).get()
-            .addOnSuccessListener { result ->
-                val list = mutableListOf<T>()
-                for (document in result) {
-                    val entity = document.toObject(entityClass)
-                    list.add(entity)
-                }
-                callback.onSuccess(list)
-            }
-            .addOnFailureListener { exception -> callback.onFailure(exception) }
-    }
-
-    /**
      * Registra un listener en tiempo real para documentos donde campo == valor.
-     * El callback onUpdate se invoca cada vez que Firestore detecta cambios,
-     * incluyendo la primera lectura inicial. El caller debe cancelar con .remove()
-     * en onStop() para evitar fugas de memoria.
+     * El callback se invoca cada vez que Firestore detecta cambios, incluyendo la primera lectura.
+     * El caller debe cancelar con .remove() en onDestroy() para evitar fugas de memoria.
      */
     fun listenByField(
         fieldName: String,
         value: Any,
-        onUpdate: (List<T>) -> Unit
+        callback: OnDataLoadedListener<T>
     ): ListenerRegistration {
         return db.collection(collectionName)
             .whereEqualTo(fieldName, value)
             .addSnapshotListener { snapshots, error ->
-                if (error != null) return@addSnapshotListener
+                if (error != null) {
+                    callback.onFailure(error)
+                    return@addSnapshotListener
+                }
                 if (snapshots == null) return@addSnapshotListener
                 val list = mutableListOf<T>()
                 for (doc in snapshots) {
                     val entity = doc.toObject(entityClass)
                     list.add(entity)
                 }
-                onUpdate(list)
+                callback.onSuccess(list)
             }
-    }
-
-    /**
-     * Elimina un documento de la base de datos de manera permanente.
-     */
-    fun delete(documentId: String, callback: OnOperationCompleteListener) {
-        db.collection(collectionName).document(documentId).delete()
-            .addOnSuccessListener { callback.onSuccess() }
-            .addOnFailureListener { exception -> callback.onFailure(exception) }
     }
 }

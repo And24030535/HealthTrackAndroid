@@ -10,18 +10,22 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.itc.healthtrackandroid.R
 import com.itc.healthtrackandroid.adapters.ColoredMetricAdapter
 import com.itc.healthtrackandroid.dao.GenericDAO
+import com.itc.healthtrackandroid.dao.OnDataLoadedListener
 import com.itc.healthtrackandroid.models.Metric
 
 /**
  * Historial de metricas del paciente.
  * Usa un listener en tiempo real para actualizarse automaticamente con cada nuevo registro.
- * Cada fila muestra fecha, PA, FC, glucosa, IMC y notas, con color clinico de fondo.
+ * El adaptador se crea una sola vez y sus datos se actualizan con updateData().
  */
 class HistoryActivity : AppCompatActivity() {
 
     private lateinit var historyRecyclerView: RecyclerView
     private lateinit var auth: FirebaseAuth
     private lateinit var metricDao: GenericDAO<Metric>
+
+    // Adaptador creado una sola vez en onCreate — no se reemplaza en cada actualizacion de Firestore
+    private lateinit var metricsAdapter: ColoredMetricAdapter
 
     // Referencia al listener en tiempo real — se cancela en onDestroy para evitar fugas de memoria
     private var metricsListener: ListenerRegistration? = null
@@ -36,12 +40,17 @@ class HistoryActivity : AppCompatActivity() {
         historyRecyclerView = findViewById(R.id.historyRecyclerView)
         historyRecyclerView.layoutManager = LinearLayoutManager(this)
 
+        // Creamos el adaptador con lista vacia y lo asignamos una unica vez
+        metricsAdapter = ColoredMetricAdapter(mutableListOf())
+        historyRecyclerView.adapter = metricsAdapter
+
         startListeningMetrics()
     }
 
     /**
      * Registra un listener en tiempo real en Firestore.
-     * El adaptador se actualiza automaticamente en cada cambio, sin necesidad de recargar manualmente.
+     * Cada actualizacion solo llama a updateData() en el adaptador existente,
+     * evitando recrearlo en cada cambio.
      */
     private fun startListeningMetrics() {
         val currentUserId = auth.currentUser?.uid
@@ -52,21 +61,34 @@ class HistoryActivity : AppCompatActivity() {
             return
         }
 
-        metricsListener = metricDao.listenByField("patientId", currentUserId) { metrics ->
-            if (metrics.isEmpty()) {
-                Toast.makeText(this, "Sin registros aún", Toast.LENGTH_SHORT).show()
-            } else {
-                // Ordenamos de mas reciente a mas antiguo
-                val sortedList = metrics.sortedByDescending { it.timestamp }
-                // ColoredMetricAdapter muestra todos los campos con indicadores de color clinico
-                historyRecyclerView.adapter = ColoredMetricAdapter(sortedList)
+        metricsListener = metricDao.listenByField(
+            "patientId",
+            currentUserId,
+            object : OnDataLoadedListener<Metric> {
+                override fun onSuccess(data: List<Metric>) {
+                    if (data.isEmpty()) {
+                        Toast.makeText(this@HistoryActivity, "Sin registros aún", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // Ordenamos de mas reciente a mas antiguo y actualizamos el adaptador
+                        val sortedList = data.sortedByDescending { it.timestamp }
+                        metricsAdapter.updateData(sortedList)
+                    }
+                }
+
+                override fun onFailure(error: Exception) {
+                    Toast.makeText(
+                        this@HistoryActivity,
+                        "Error al cargar el historial",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
-        }
+        )
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        // Cancelamos el listener cuando la actividad se destruye — evita actualizaciones
+        // Cancelamos el listener cuando la actividad se destruye para evitar actualizaciones
         // que lleguen despues de que el RecyclerView ya no exista
         metricsListener?.remove()
         metricsListener = null

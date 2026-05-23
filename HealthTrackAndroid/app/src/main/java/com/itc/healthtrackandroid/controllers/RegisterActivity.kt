@@ -146,6 +146,9 @@ class RegisterActivity : AppCompatActivity() {
             }
 
             override fun onFailure(error: Exception) {
+                // Revertimos la cuenta de Firebase Auth para evitar dejar cuentas huerfanas.
+                // Si no hacemos esto, el usuario quedaria con acceso Auth pero sin perfil en Firestore.
+                auth.currentUser?.delete()
                 Toast.makeText(
                     this@RegisterActivity,
                     "Error al guardar el perfil: ${error.message}",

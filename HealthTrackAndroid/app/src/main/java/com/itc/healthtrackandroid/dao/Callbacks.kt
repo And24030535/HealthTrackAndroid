@@ -12,7 +12,7 @@ interface OnOperationCompleteListener {
 
 /**
  * Interfaz usada cuando pedimos una lista completa de datos (ejemplo: todo el historial).
- * La letra T significa "Cualquier Tipo" (puede ser User, Metric o Recommendation).
+ * La letra T significa "Cualquier Tipo" (puede ser User o Metric).
  */
 interface OnDataLoadedListener<T> {
     // Devuelve una lista de los objetos solicitados

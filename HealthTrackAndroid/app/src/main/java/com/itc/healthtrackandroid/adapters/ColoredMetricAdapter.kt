@@ -20,8 +20,18 @@ import java.util.Locale
  * Verde (#0D2B0D): valores dentro del rango normal
  */
 class ColoredMetricAdapter(
-    private val metrics: List<Metric>
+    private val metrics: MutableList<Metric>
 ) : RecyclerView.Adapter<ColoredMetricAdapter.MetricViewHolder>() {
+
+    /**
+     * Reemplaza los datos del adaptador y notifica al RecyclerView para que redibuje la lista.
+     * Se llama desde HistoryActivity cada vez que Firestore emite una actualizacion.
+     */
+    fun updateData(newMetrics: List<Metric>) {
+        metrics.clear()
+        metrics.addAll(newMetrics)
+        notifyDataSetChanged()
+    }
 
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
 

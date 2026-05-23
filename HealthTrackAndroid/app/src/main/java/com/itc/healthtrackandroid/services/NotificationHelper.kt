@@ -1,0 +1,64 @@
+package com.itc.healthtrackandroid.services
+
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import com.itc.healthtrackandroid.R
+import com.itc.healthtrackandroid.controllers.DashboardActivity
+
+/**
+ * Clase auxiliar para crear el canal de notificaciones y mostrar el recordatorio diario.
+ * createChannel() debe llamarse una sola vez al abrir el panel principal.
+ */
+object NotificationHelper {
+
+    private const val CHANNEL_ID      = "health_reminder_channel"
+    private const val CHANNEL_NAME    = "Recordatorios de Salud"
+    private const val NOTIFICATION_ID = 1001
+
+    /**
+     * Crea el canal de notificaciones obligatorio en Android 8.0 (API 26) y superior.
+     * En versiones anteriores la llamada no hace nada — NotificationCompat se encarga.
+     */
+    fun createChannel(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            channel.description = "Recordatorio diario para registrar tus metricas de salud"
+            val manager = context.getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    /**
+     * Muestra la notificacion de recordatorio. Al tocarla abre el panel principal del paciente.
+     */
+    fun showReminderNotification(context: Context) {
+        val intent = Intent(context, DashboardActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_healthtrack_logo)
+            .setContentTitle("HealthTrack — Recordatorio")
+            .setContentText("No olvides registrar tus metricas de salud de hoy.")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.notify(NOTIFICATION_ID, notification)
+    }
+}
