@@ -31,14 +31,17 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        // inicializamos firebase auth y el dao de usuarios
         auth    = FirebaseAuth.getInstance()
         userDao = GenericDAO(User::class.java, "users")
 
+        // conectamos cada vista con su variable en kotlin
         emailEditText    = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
         loginButton      = findViewById(R.id.loginButton)
         registerTextView = findViewById(R.id.registerTextView)
 
+        // asignamos los listeners de los botones
         loginButton.setOnClickListener { performLogin() }
 
         registerTextView.setOnClickListener {
@@ -54,13 +57,16 @@ class LoginActivity : AppCompatActivity() {
         val email    = emailEditText.text.toString().trim()
         val password = passwordEditText.text.toString().trim()
 
+        // verificamos que los campos no esten vacios antes de continuar
         if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Por favor ingresa correo y contraseña", Toast.LENGTH_SHORT).show()
             return
         }
 
+        // deshabilitamos el boton para evitar doble envio
         loginButton.isEnabled = false
 
+        // intentamos autenticar al usuario con firebase
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
@@ -78,9 +84,11 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun fetchUserAndNavigate(userId: String) {
+        // buscamos el perfil del usuario en firestore para saber su rol
         userDao.getById(userId, object : OnSingleDataLoadedListener<User> {
 
             override fun onSuccess(data: User?) {
+                // si no existe el perfil en firestore avisamos y cancelamos
                 if (data == null) {
                     Toast.makeText(
                         this@LoginActivity,
@@ -109,10 +117,13 @@ class LoginActivity : AppCompatActivity() {
     // ─────────────────────────────────────────────────────────────────────────
 
     private fun navigateToDashboard(data: User) {
-        val intent = Intent(this, DashboardActivity::class.java)
-        intent.putExtra("USER_ROLE", data.role)
-        intent.putExtra("USER_UID",  data.uid)
-        intent.putExtra("USER_NAME", "${data.firstName} ${data.lastName}")
+        // limpiamos el historial de actividades para que al presionar atras se cierre la app
+        val intent = Intent(this, DashboardActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("USER_ROLE", data.role)
+            putExtra("USER_UID",  data.uid)
+            putExtra("USER_NAME", "${data.firstName} ${data.lastName}")
+        }
         startActivity(intent)
         finish()
     }

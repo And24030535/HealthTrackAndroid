@@ -34,16 +34,18 @@ class HistoryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_history)
 
+        // inicializamos firebase y el dao de metricas
         auth = FirebaseAuth.getInstance()
         metricDao = GenericDAO(Metric::class.java, "metrics")
 
         historyRecyclerView = findViewById(R.id.historyRecyclerView)
         historyRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        // Creamos el adaptador con lista vacia y lo asignamos una unica vez
+        // creamos el adaptador con lista vacia y lo asignamos una unica vez
         metricsAdapter = ColoredMetricAdapter(mutableListOf())
         historyRecyclerView.adapter = metricsAdapter
 
+        // arrancamos el listener en tiempo real para ver los registros del paciente
         startListeningMetrics()
     }
 
@@ -53,6 +55,7 @@ class HistoryActivity : AppCompatActivity() {
      * evitando recrearlo en cada cambio.
      */
     private fun startListeningMetrics() {
+        // si no hay sesion activa mandamos al login
         val currentUserId = auth.currentUser?.uid
 
         if (currentUserId == null) {
@@ -61,6 +64,7 @@ class HistoryActivity : AppCompatActivity() {
             return
         }
 
+        // registramos el listener en tiempo real filtrando por el id del paciente
         metricsListener = metricDao.listenByField(
             "patientId",
             currentUserId,
@@ -69,7 +73,7 @@ class HistoryActivity : AppCompatActivity() {
                     if (data.isEmpty()) {
                         Toast.makeText(this@HistoryActivity, "Sin registros aún", Toast.LENGTH_SHORT).show()
                     } else {
-                        // Ordenamos de mas reciente a mas antiguo y actualizamos el adaptador
+                        // ordenamos la lista de mas nueva a mas vieja y actualizamos el adaptador
                         val sortedList = data.sortedByDescending { it.timestamp }
                         metricsAdapter.updateData(sortedList)
                     }
@@ -88,8 +92,7 @@ class HistoryActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Cancelamos el listener cuando la actividad se destruye para evitar actualizaciones
-        // que lleguen despues de que el RecyclerView ya no exista
+        // cerramos el listener para no desperdiciar recursos cuando la pantalla se cierra
         metricsListener?.remove()
         metricsListener = null
     }

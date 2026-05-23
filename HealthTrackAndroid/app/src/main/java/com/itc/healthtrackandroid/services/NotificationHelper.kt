@@ -25,6 +25,7 @@ object NotificationHelper {
      * En versiones anteriores la llamada no hace nada — NotificationCompat se encarga.
      */
     fun createChannel(context: Context) {
+        // creamos el canal de notificaciones para android 8 y superior
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
@@ -41,6 +42,7 @@ object NotificationHelper {
      * Muestra la notificacion de recordatorio. Al tocarla abre el panel principal del paciente.
      */
     fun showReminderNotification(context: Context) {
+        // al tocar la notificacion el paciente va directo al dashboard
         val intent = Intent(context, DashboardActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }

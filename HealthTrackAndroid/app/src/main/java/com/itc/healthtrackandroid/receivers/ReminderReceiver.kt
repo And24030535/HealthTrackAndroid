@@ -12,6 +12,7 @@ import com.itc.healthtrackandroid.services.NotificationHelper
 class ReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
+        // cuando suena la alarma mostramos la notificacion de recordatorio al paciente
         NotificationHelper.showReminderNotification(context)
     }
 }

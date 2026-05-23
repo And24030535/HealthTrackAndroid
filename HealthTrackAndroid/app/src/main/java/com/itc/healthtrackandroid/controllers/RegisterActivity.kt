@@ -41,9 +41,11 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
+        // inicializamos firebase auth y el dao para guardar el perfil
         auth    = FirebaseAuth.getInstance()
         userDao = GenericDAO(User::class.java, "users")
 
+        // conectamos los campos del formulario con sus variables
         firstNameEditText  = findViewById(R.id.firstNameEditText)
         lastNameEditText   = findViewById(R.id.lastNameEditText)
         emailEditText      = findViewById(R.id.emailEditText)
@@ -83,20 +85,25 @@ class RegisterActivity : AppCompatActivity() {
         val email     = emailEditText.text.toString().trim()
         val password  = passwordEditText.text.toString().trim()
 
+        // validamos que todos los campos obligatorios tengan valor
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
             return
         }
 
+        // la contrasena debe tener al menos 6 caracteres para firebase
         if (password.length < 6) {
             Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
             return
         }
 
+        // la altura es opcional pero la necesitamos para calcular el IMC despues
         val height = heightEditText.text.toString().trim().toDoubleOrNull()
 
+        // deshabilitamos el boton para evitar doble registro
         registerButton.isEnabled = false
 
+        // creamos la cuenta en firebase auth con correo y contrasena
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
@@ -123,6 +130,7 @@ class RegisterActivity : AppCompatActivity() {
         email: String,
         height: Double?
     ) {
+        // armamos el objeto de usuario con el rol de paciente y lo guardamos en firestore
         val newUser = User(
             uid       = userId,
             email     = email,
@@ -137,10 +145,13 @@ class RegisterActivity : AppCompatActivity() {
 
             override fun onSuccess() {
                 Toast.makeText(this@RegisterActivity, "Cuenta creada exitosamente", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this@RegisterActivity, DashboardActivity::class.java)
-                intent.putExtra("USER_ROLE", "patient")
-                intent.putExtra("USER_UID",  userId)
-                intent.putExtra("USER_NAME", "$firstName $lastName")
+                // limpiamos el historial de actividades igual que en el login
+                val intent = Intent(this@RegisterActivity, DashboardActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    putExtra("USER_ROLE", "patient")
+                    putExtra("USER_UID",  userId)
+                    putExtra("USER_NAME", "$firstName $lastName")
+                }
                 startActivity(intent)
                 finish()
             }

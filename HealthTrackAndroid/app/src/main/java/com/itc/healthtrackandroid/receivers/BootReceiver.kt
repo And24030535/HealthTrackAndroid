@@ -14,6 +14,7 @@ class BootReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
+            // si habia un recordatorio guardado lo volvemos a programar tras el reinicio
             val savedTime = ReminderScheduler.getSavedTime(context)
             if (savedTime != null) {
                 ReminderScheduler.schedule(context, savedTime.first, savedTime.second)

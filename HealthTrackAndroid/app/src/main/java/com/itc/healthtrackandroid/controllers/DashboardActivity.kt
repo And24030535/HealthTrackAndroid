@@ -51,6 +51,7 @@ class DashboardActivity : AppCompatActivity() {
         // En Android < 8.0 (API 26) esta llamada no hace nada.
         NotificationHelper.createChannel(this)
 
+        // conectamos firebase auth y las vistas del dashboard
         auth = FirebaseAuth.getInstance()
 
         welcomeTextView   = findViewById(R.id.welcomeTextView)
@@ -59,15 +60,17 @@ class DashboardActivity : AppCompatActivity() {
         reminderButton    = findViewById(R.id.reminderButton)
         logoutButton      = findViewById(R.id.logoutButton)
 
+        // mostramos el nombre del paciente que viene del intent del login
         val userName = intent.getStringExtra("USER_NAME") ?: ""
         welcomeTextView.text = if (userName.isNotEmpty())
             "Bienvenido, $userName\nPaciente"
         else
             "Bienvenido a HealthTrack"
 
-        // Mostramos la hora del recordatorio activo si ya fue configurado antes
+        // mostramos la hora del recordatorio activo si ya fue configurado antes
         updateReminderButtonLabel()
 
+        // navegamos a las distintas pantallas segun el boton presionado
         addMetricButton.setOnClickListener {
             startActivity(Intent(this, AddMetricActivity::class.java))
         }
@@ -140,6 +143,7 @@ class DashboardActivity : AppCompatActivity() {
      * Cierra la sesion en Firebase y vuelve a la pantalla de inicio de sesion.
      */
     private fun performLogout() {
+        // cerramos la sesion en firebase y limpiamos el historial de actividades
         auth.signOut()
         val intent = Intent(this, LoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

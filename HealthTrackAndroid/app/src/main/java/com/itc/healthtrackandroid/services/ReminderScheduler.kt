@@ -64,6 +64,7 @@ object ReminderScheduler {
      * Cancela el recordatorio activo y borra la configuracion guardada.
      */
     fun cancel(context: Context) {
+        // desactivamos el recordatorio y borramos la configuracion guardada
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
             .putBoolean(KEY_ENABLED, false)
             .apply()
