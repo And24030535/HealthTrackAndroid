@@ -17,11 +17,7 @@ import com.itc.healthtrackandroid.models.User
 import com.itc.healthtrackandroid.services.ReminderScheduler
 import kotlin.math.roundToInt
 
-/**
- * Pantalla para registrar metricas de salud.
- * Si se ingresa peso, descarga la altura del perfil del usuario para calcular
- * el IMC automaticamente (IMC = peso / altura^2).
- */
+// pantalla para registrar metricas con calculo automatico de imc cuando hay peso y altura
 class AddMetricActivity : AppCompatActivity() {
 
     private lateinit var weightEditText: EditText
@@ -55,10 +51,7 @@ class AddMetricActivity : AppCompatActivity() {
         saveMetricButton.setOnClickListener { saveMetricToDatabase() }
     }
 
-    /**
-     * Lee los campos y decide si hay que descargar la altura del usuario
-     * para calcular el IMC antes de guardar.
-     */
+    // lee los campos y decide si hay que descargar la altura para calcular el imc antes de guardar
     private fun saveMetricToDatabase() {
         // verificamos que el usuario tenga sesion activa antes de guardar
         val currentUserId = auth.currentUser?.uid
@@ -112,9 +105,7 @@ class AddMetricActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Construye el objeto Metric con todos los campos (incluido IMC) y lo envia a Firestore.
-     */
+    // arma el objeto Metric con todos los campos incluido el imc y lo envia a firestore
     private fun buildAndSaveMetric(
         userId: String, weight: Double?, systolic: Int?, diastolic: Int?,
         heartRate: Int?, glucose: Double?, bmi: Double?

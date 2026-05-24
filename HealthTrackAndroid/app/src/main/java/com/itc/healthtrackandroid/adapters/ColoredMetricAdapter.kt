@@ -11,22 +11,12 @@ import com.itc.healthtrackandroid.models.Metric
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-/**
- * Adaptador con indicadores de color clinico para cada fila de metrica.
- * Usado tanto en la vista del doctor como en el historial del paciente.
- *
- * Rojo  (#4A1010): PA sistolica > 140, diastolica > 90 o glucosa > 200
- * Ambar (#3A2E00): IMC > 30 (sin alerta roja)
- * Verde (#0D2B0D): valores dentro del rango normal
- */
+// adaptador con franja de color clinico por fila (rojo si hay alerta de PA o glucosa, ambar si imc alto, verde si normal)
 class ColoredMetricAdapter(
     private val metrics: MutableList<Metric>
 ) : RecyclerView.Adapter<ColoredMetricAdapter.MetricViewHolder>() {
 
-    /**
-     * Reemplaza los datos del adaptador y notifica al RecyclerView para que redibuje la lista.
-     * Se llama desde HistoryActivity cada vez que Firestore emite una actualizacion.
-     */
+    // reemplaza los datos y avisa al RecyclerView para que redibuje la lista
     fun updateData(newMetrics: List<Metric>) {
         // reemplazamos todos los datos y le avisamos al RecyclerView para que redibuje
         metrics.clear()
@@ -54,51 +44,45 @@ class ColoredMetricAdapter(
     override fun onBindViewHolder(holder: MetricViewHolder, position: Int) {
         val metric = metrics[position]
 
-        // Copiamos las propiedades var a val locales para permitir el smart cast de Kotlin
+        // copiamos las propiedades var a val locales para que Kotlin permita el smart cast
         val timestamp = metric.timestamp
         val glucoseLevel = metric.glucoseLevel
         val bmi = metric.bmi
         val sys = metric.systolic
         val dia = metric.diastolic
 
-        // Fecha del registro
         holder.dateTextView.text = if (timestamp != null) {
             dateFormat.format(timestamp.toDate())
         } else "—"
 
-        // Presion arterial
         holder.bpTextView.text = if (sys != null && dia != null) {
             "PA: $sys/$dia mmHg"
         } else "PA: —"
 
-        // Frecuencia cardiaca
         holder.heartRateTextView.text = if (metric.heartRate != null) {
             "FC: ${metric.heartRate} lpm"
         } else "FC: —"
 
-        // Glucosa
         holder.glucoseTextView.text = if (glucoseLevel != null) {
             "Glucosa: $glucoseLevel mg/dL"
         } else "Glucosa: —"
 
-        // IMC calculado automaticamente al guardar la metrica
         holder.bmiTextView.text = if (bmi != null) {
             "IMC: $bmi"
         } else "IMC: —"
 
-        // Franja lateral de color segun los umbrales clinicos.
-        // El fondo de la fila se mantiene oscuro fijo; solo la franja cambia de color.
+        // franja lateral con color clinico mientras el fondo de la fila se queda oscuro fijo
         val stripeColor = when {
             (sys != null && sys > 140) ||
             (dia != null && dia > 90) ||
             (glucoseLevel != null && glucoseLevel > 200.0) ->
-                Color.parseColor("#C0392B") // rojo — riesgo alto
+                Color.parseColor("#C0392B") // rojo riesgo alto
 
             bmi != null && bmi > 30.0 ->
-                Color.parseColor("#E6A817") // ambar — IMC elevado
+                Color.parseColor("#E6A817") // ambar imc elevado
 
             else ->
-                Color.parseColor("#2E7D32") // verde — normal
+                Color.parseColor("#2E7D32") // verde normal
         }
         holder.colorStripe.setBackgroundColor(stripeColor)
         holder.itemView.setBackgroundColor(Color.parseColor("#152231")) // fondo fijo

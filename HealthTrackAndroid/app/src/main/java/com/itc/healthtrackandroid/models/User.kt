@@ -1,41 +1,23 @@
 package com.itc.healthtrackandroid.models
 
-/**
- * Representa a cualquier usuario del sistema (paciente, doctor o administrador).
- * Se asignan valores por defecto (como = "" o = null) para que Firebase pueda
- * crear el objeto automaticamente al descargar datos de internet.
- */
+// representa a cualquier usuario del sistema (paciente doctor o administrador) con valores por defecto para que Firebase pueda crear el objeto
 data class User(
-    // Identificador unico del usuario
     var uid: String? = null,
-
-    // Correo electronico para iniciar sesion
     var email: String = "",
-
-    // Nombre de pila
     var firstName: String = "",
-
-    // Apellidos
     var lastName: String = "",
-
-    // Rol del usuario: "patient", "doctor", o "admin"
+    // rol patient doctor o admin
     var role: String = "",
-
-    // Fecha de nacimiento guardada como texto
+    // fecha de nacimiento guardada como texto
     var birthDate: String? = null,
-
-    // Genero del usuario ("M", "F", "Other")
+    // genero M F u Other
     var gender: String? = null,
-
-    // Estatura en metros (ejemplo: 1.75). Double se usa para decimales.
+    // estatura en metros con decimales (ej 1.75)
     var height: Double? = null,
-
-    // El ID del medico que atiende a este paciente (solo util si el rol es "patient")
+    // id del medico que atiende al paciente solo aplica si el rol es patient
     var assignedDoctorId: String? = null,
-
-    // El nombre del medico asignado, para mostrarlo facilmente en la pantalla
+    // nombre del medico asignado para mostrarlo facilmente en la pantalla
     var assignedDoctorName: String? = null,
-    
-    // Lista de IDs de pacientes asignados (solo util si el rol es "doctor")
+    // lista de ids de pacientes asignados solo aplica si el rol es doctor
     var patientIds: List<String>? = null
 )

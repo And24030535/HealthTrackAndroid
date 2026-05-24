@@ -1,30 +1,20 @@
 package com.itc.healthtrackandroid.dao
 
-/**
- * Interfaz usada cuando la accion no devuelve datos (ejemplo: guardar o borrar).
- */
+// callback para acciones que no devuelven datos como guardar o borrar
 interface OnOperationCompleteListener {
-    // Funcion que se ejecuta si todo salio bien
     fun onSuccess()
-    // Funcion que se ejecuta si ocurrio un error (sin internet, sin permisos, etc.)
     fun onFailure(error: Exception)
 }
 
-/**
- * Interfaz usada cuando pedimos una lista completa de datos (ejemplo: todo el historial).
- * La letra T significa "Cualquier Tipo" (puede ser User o Metric).
- */
+// callback para pedir una lista completa de datos donde T es el tipo (User o Metric)
 interface OnDataLoadedListener<T> {
-    // Devuelve una lista de los objetos solicitados
     fun onSuccess(data: List<T>)
     fun onFailure(error: Exception)
 }
 
-/**
- * Interfaz usada cuando buscamos un solo documento en especifico por su ID.
- */
+// callback para buscar un solo documento por su id
 interface OnSingleDataLoadedListener<T> {
-    // Devuelve un solo objeto, o nulo si no lo encontro
+    // devuelve el objeto o nulo si no se encontro
     fun onSuccess(data: T?)
     fun onFailure(error: Exception)
 }

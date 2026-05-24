@@ -13,24 +13,20 @@ import com.itc.healthtrackandroid.dao.GenericDAO
 import com.itc.healthtrackandroid.dao.OnDataLoadedListener
 import com.itc.healthtrackandroid.models.Metric
 
-/**
- * Historial de metricas del paciente.
- * Usa un listener en tiempo real para actualizarse automaticamente con cada nuevo registro.
- * El adaptador se crea una sola vez y sus datos se actualizan con updateData().
- */
+// historial de metricas del paciente con listener en tiempo real y adaptador reutilizado
 class HistoryActivity : AppCompatActivity() {
 
     private lateinit var historyRecyclerView: RecyclerView
     private lateinit var auth: FirebaseAuth
     private lateinit var metricDao: GenericDAO<Metric>
 
-    // Adaptador creado una sola vez en onCreate — no se reemplaza en cada actualizacion de Firestore
+    // adaptador creado una sola vez en onCreate que no se reemplaza con cada actualizacion de firestore
     private lateinit var metricsAdapter: ColoredMetricAdapter
 
-    // Referencia al listener en tiempo real — se cancela en onDestroy para evitar fugas de memoria
+    // referencia al listener en tiempo real que se cancela en onDestroy para evitar fugas de memoria
     private var metricsListener: ListenerRegistration? = null
 
-    // Bandera para mostrar el aviso de "sin registros" solo la primera vez
+    // bandera para mostrar el aviso de sin registros solo la primera vez
     private var emptyToastShown = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,11 +48,7 @@ class HistoryActivity : AppCompatActivity() {
         startListeningMetrics()
     }
 
-    /**
-     * Registra un listener en tiempo real en Firestore.
-     * Cada actualizacion solo llama a updateData() en el adaptador existente,
-     * evitando recrearlo en cada cambio.
-     */
+    // registra un listener en tiempo real en firestore que solo llama a updateData en el adaptador existente
     private fun startListeningMetrics() {
         // si no hay sesion activa mandamos al login
         val currentUserId = auth.currentUser?.uid

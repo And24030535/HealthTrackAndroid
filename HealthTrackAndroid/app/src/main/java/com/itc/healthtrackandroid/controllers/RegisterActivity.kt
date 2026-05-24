@@ -15,11 +15,7 @@ import com.itc.healthtrackandroid.dao.OnOperationCompleteListener
 import com.itc.healthtrackandroid.models.User
 import java.util.Calendar
 
-/**
- * Pantalla de Registro — solo para pacientes.
- * Crea la cuenta en Firebase Auth y guarda el perfil completo en Firestore,
- * incluyendo altura y fecha de nacimiento.
- */
+// pantalla de registro de pacientes que crea la cuenta en firebase auth y guarda el perfil completo en firestore
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var firstNameEditText: EditText
@@ -34,7 +30,7 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var userDao: GenericDAO<User>
 
-    // Fecha seleccionada en el picker (formato "YYYY-MM-DD")
+    // fecha seleccionada en el picker en formato YYYY-MM-DD
     private var selectedBirthDate: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,9 +55,7 @@ class RegisterActivity : AppCompatActivity() {
         registerButton.setOnClickListener { performRegistration() }
     }
 
-    /**
-     * Abre el DatePickerDialog y guarda la fecha en formato ISO (YYYY-MM-DD).
-     */
+    // abre el selector y guarda la fecha en formato ISO
     private fun openDatePicker() {
         // abrimos el selector de fecha y guardamos el resultado en formato ISO
         val cal = Calendar.getInstance()
@@ -77,9 +71,7 @@ class RegisterActivity : AppCompatActivity() {
         ).show()
     }
 
-    /**
-     * Valida los campos obligatorios y crea la cuenta.
-     */
+    // valida los campos obligatorios y crea la cuenta
     private fun performRegistration() {
         val firstName = firstNameEditText.text.toString().trim()
         val lastName  = lastNameEditText.text.toString().trim()
@@ -134,9 +126,7 @@ class RegisterActivity : AppCompatActivity() {
             }
     }
 
-    /**
-     * Guarda el perfil del paciente en Firestore y navega al dashboard.
-     */
+    // guarda el perfil del paciente en firestore y navega al dashboard
     private fun saveUserProfile(
         userId: String,
         firstName: String,
@@ -172,8 +162,7 @@ class RegisterActivity : AppCompatActivity() {
             }
 
             override fun onFailure(error: Exception) {
-                // Revertimos la cuenta de Firebase Auth para evitar dejar cuentas huerfanas.
-                // Si no hacemos esto, el usuario quedaria con acceso Auth pero sin perfil en Firestore.
+                // revertimos la cuenta de firebase auth para no dejar cuentas huerfanas sin perfil en firestore
                 auth.currentUser?.delete()
                 if (isFinishing || isDestroyed) return
                 Toast.makeText(

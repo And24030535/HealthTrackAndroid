@@ -11,20 +11,14 @@ import androidx.core.app.NotificationCompat
 import com.itc.healthtrackandroid.R
 import com.itc.healthtrackandroid.controllers.DashboardActivity
 
-/**
- * Clase auxiliar para crear el canal de notificaciones y mostrar el recordatorio diario.
- * createChannel() debe llamarse una sola vez al abrir el panel principal.
- */
+// clase auxiliar para crear el canal de notificaciones y mostrar el recordatorio diario
 object NotificationHelper {
 
     private const val CHANNEL_ID      = "health_reminder_channel"
     private const val CHANNEL_NAME    = "Recordatorios de Salud"
     private const val NOTIFICATION_ID = 1001
 
-    /**
-     * Crea el canal de notificaciones obligatorio en Android 8.0 (API 26) y superior.
-     * En versiones anteriores la llamada no hace nada — NotificationCompat se encarga.
-     */
+    // crea el canal de notificaciones obligatorio en android 8 y superior (en versiones anteriores no hace nada)
     fun createChannel(context: Context) {
         // creamos el canal de notificaciones para android 8 y superior
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -39,9 +33,7 @@ object NotificationHelper {
         }
     }
 
-    /**
-     * Muestra la notificacion de recordatorio. Al tocarla abre el panel principal del paciente.
-     */
+    // muestra la notificacion de recordatorio que al tocarla abre el panel principal del paciente
     fun showReminderNotification(context: Context) {
         // nos aseguramos que el canal exista antes de mostrar la notificacion
         createChannel(context)

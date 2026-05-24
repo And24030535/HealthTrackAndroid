@@ -13,10 +13,7 @@ import com.itc.healthtrackandroid.dao.GenericDAO
 import com.itc.healthtrackandroid.dao.OnSingleDataLoadedListener
 import com.itc.healthtrackandroid.models.User
 
-/**
- * Pantalla de inicio de sesion — solo para pacientes.
- * Flujo: correo + contrasena → autenticacion Firebase → DashboardActivity.
- */
+// pantalla de inicio de sesion para pacientes con flujo correo y contrasena hacia firebase auth
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var emailEditText: EditText
@@ -56,9 +53,7 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // LOGIN
-    // ─────────────────────────────────────────────────────────────────────────
+    // login
 
     private fun performLogin() {
         val email    = emailEditText.text.toString().trim()
@@ -122,9 +117,7 @@ class LoginActivity : AppCompatActivity() {
         })
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // NAVEGACION
-    // ─────────────────────────────────────────────────────────────────────────
+    // navegacion
 
     private fun navigateToDashboard(data: User) {
         // limpiamos el historial de actividades para que al presionar atras se cierre la app

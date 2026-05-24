@@ -5,11 +5,7 @@ import android.content.Context
 import android.content.Intent
 import com.itc.healthtrackandroid.services.ReminderScheduler
 
-/**
- * Receptor que se activa cuando el dispositivo termina de encenderse.
- * Los AlarmManager se borran al reiniciar el telefono, por lo que este receiver
- * se encarga de reprogramar el recordatorio diario automaticamente.
- */
+// receiver que se activa al terminar el arranque y reprograma el recordatorio diario porque los AlarmManager se borran al reiniciar
 class BootReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {

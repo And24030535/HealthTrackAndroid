@@ -6,10 +6,7 @@ import android.content.Intent
 import android.util.Log
 import com.itc.healthtrackandroid.services.NotificationHelper
 
-/**
- * Receptor que el sistema activa cuando llega la hora del recordatorio programado.
- * Su unica responsabilidad es mostrar la notificacion de recordatorio.
- */
+// receiver que el sistema activa cuando llega la hora del recordatorio y solo muestra la notificacion
 class ReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {

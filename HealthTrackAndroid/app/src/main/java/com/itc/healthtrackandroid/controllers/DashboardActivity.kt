@@ -18,10 +18,7 @@ import com.itc.healthtrackandroid.services.NotificationHelper
 import com.itc.healthtrackandroid.services.ReminderScheduler
 import java.util.Calendar
 
-/**
- * Panel principal del paciente.
- * Permite navegar a registrar metricas, ver el historial, configurar recordatorios o cerrar sesion.
- */
+// panel principal del paciente con navegacion a metricas historial recordatorios y cierre de sesion
 class DashboardActivity : AppCompatActivity() {
 
     private lateinit var welcomeTextView: TextView
@@ -32,7 +29,7 @@ class DashboardActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
 
-    // Lanzador de solicitud de permiso de notificaciones — solo aplica en Android 13 (API 33) y superior
+    // lanzador del permiso de notificaciones que solo aplica en android 13 y superior
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -47,8 +44,7 @@ class DashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
 
-        // Creamos el canal de notificaciones la primera vez que se abre el dashboard.
-        // En Android < 8.0 (API 26) esta llamada no hace nada.
+        // creamos el canal de notificaciones la primera vez que se abre el dashboard (en android menor a 8 no hace nada)
         NotificationHelper.createChannel(this)
 
         // conectamos firebase auth y las vistas del dashboard
@@ -84,14 +80,9 @@ class DashboardActivity : AppCompatActivity() {
         logoutButton.setOnClickListener { performLogout() }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // RECORDATORIO
-    // ─────────────────────────────────────────────────────────────────────────
+    // recordatorio
 
-    /**
-     * Verifica el permiso POST_NOTIFICATIONS en Android 13+ antes de abrir el selector de hora.
-     * En versiones anteriores el permiso no existe y abre el selector directamente.
-     */
+    // checamos el permiso POST_NOTIFICATIONS en android 13 antes de abrir el selector de hora
     private fun requestNotificationPermissionOrOpenPicker() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val permission = Manifest.permission.POST_NOTIFICATIONS
@@ -105,10 +96,7 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Muestra el selector de hora para que el paciente configure su recordatorio diario.
-     * Calendar.getInstance() usa automaticamente el huso horario local del dispositivo.
-     */
+    // muestra el selector de hora para configurar el recordatorio diario usando el huso horario local
     private fun openTimePicker() {
         // tomamos la hora actual del telefono como valor inicial del selector
         val calendar      = Calendar.getInstance()
@@ -124,9 +112,7 @@ class DashboardActivity : AppCompatActivity() {
         }, currentHour, currentMinute, true).show()
     }
 
-    /**
-     * Actualiza el texto del boton para reflejar la hora del recordatorio activo o el estado inactivo.
-     */
+    // actualiza el texto del boton segun la hora del recordatorio activo o si esta inactivo
     private fun updateReminderButtonLabel() {
         // mostramos la hora guardada en el boton o el texto por defecto si no hay recordatorio
         val saved = ReminderScheduler.getSavedTime(this)
@@ -138,13 +124,9 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // SESION
-    // ─────────────────────────────────────────────────────────────────────────
+    // sesion
 
-    /**
-     * Cierra la sesion en Firebase y vuelve a la pantalla de inicio de sesion.
-     */
+    // cierra la sesion en firebase y vuelve al login
     private fun performLogout() {
         // cerramos la sesion en firebase y limpiamos el historial de actividades
         auth.signOut()
