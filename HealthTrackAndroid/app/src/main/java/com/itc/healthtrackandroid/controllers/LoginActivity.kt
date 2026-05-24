@@ -47,6 +47,13 @@ class LoginActivity : AppCompatActivity() {
         registerTextView.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
+
+        // si el usuario ya tiene sesion activa lo mandamos directo al dashboard
+        val existingUser = auth.currentUser
+        if (existingUser != null) {
+            loginButton.isEnabled = false
+            fetchUserAndNavigate(existingUser.uid)
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -88,6 +95,8 @@ class LoginActivity : AppCompatActivity() {
         userDao.getById(userId, object : OnSingleDataLoadedListener<User> {
 
             override fun onSuccess(data: User?) {
+                // evitamos actualizar la pantalla si ya se cerro
+                if (isFinishing || isDestroyed) return
                 // si no existe el perfil en firestore avisamos y cancelamos
                 if (data == null) {
                     Toast.makeText(
@@ -102,6 +111,7 @@ class LoginActivity : AppCompatActivity() {
             }
 
             override fun onFailure(error: Exception) {
+                if (isFinishing || isDestroyed) return
                 Toast.makeText(
                     this@LoginActivity,
                     "Error al obtener datos del usuario: ${error.message}",

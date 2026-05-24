@@ -71,6 +71,7 @@ class GenericDAO<T : Any>(
                     return@addSnapshotListener
                 }
                 if (snapshots == null) return@addSnapshotListener
+                // convertimos cada documento de firestore en un objeto kotlin y lo agregamos a la lista
                 val list = mutableListOf<T>()
                 for (doc in snapshots) {
                     val entity = doc.toObject(entityClass)

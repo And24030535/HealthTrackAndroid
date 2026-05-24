@@ -18,9 +18,6 @@ data class Metric(
     // Tipo de metrica (presion, glucosa, peso, etc.)
     var metricType: String? = null,
 
-    // Notas adicionales opcionales
-    var notes: String? = null,
-
     // Presion arterial sistolica (el numero de arriba)
     var systolic: Int? = null,
 

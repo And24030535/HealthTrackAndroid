@@ -1,6 +1,7 @@
 package com.itc.healthtrackandroid.controllers
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -28,7 +29,6 @@ class AddMetricActivity : AppCompatActivity() {
     private lateinit var diastolicEditText: EditText
     private lateinit var heartRateEditText: EditText
     private lateinit var glucoseEditText: EditText
-    private lateinit var notesEditText: EditText
     private lateinit var saveMetricButton: Button
 
     private lateinit var auth: FirebaseAuth
@@ -50,7 +50,6 @@ class AddMetricActivity : AppCompatActivity() {
         diastolicEditText = findViewById(R.id.diastolicEditText)
         heartRateEditText = findViewById(R.id.heartRateEditText)
         glucoseEditText = findViewById(R.id.glucoseEditText)
-        notesEditText = findViewById(R.id.notesEditText)
         saveMetricButton = findViewById(R.id.saveMetricButton)
 
         saveMetricButton.setOnClickListener { saveMetricToDatabase() }
@@ -76,7 +75,6 @@ class AddMetricActivity : AppCompatActivity() {
         val diastolicValue = diastolicEditText.text.toString().toIntOrNull()
         val heartRateValue = heartRateEditText.text.toString().toIntOrNull()
         val glucoseValue = glucoseEditText.text.toString().toDoubleOrNull()
-        val notesValue = notesEditText.text.toString().trim()
 
         // el paciente debe ingresar al menos un valor para guardar
         if (weightValue == null && systolicValue == null && diastolicValue == null &&
@@ -90,6 +88,8 @@ class AddMetricActivity : AppCompatActivity() {
         if (weightValue != null) {
             userDao.getById(currentUserId, object : OnSingleDataLoadedListener<User> {
                 override fun onSuccess(data: User?) {
+                    // si la pantalla ya se cerro no continuamos
+                    if (isFinishing || isDestroyed) return
                     val height = data?.height
                     // calculamos el imc con el peso y la estatura del usuario
                     val bmi = if (height != null && height > 0.0) {
@@ -97,17 +97,18 @@ class AddMetricActivity : AppCompatActivity() {
                         (raw * 10).roundToInt() / 10.0
                     } else null
                     buildAndSaveMetric(currentUserId, weightValue, systolicValue, diastolicValue,
-                        heartRateValue, glucoseValue, notesValue, bmi)
+                        heartRateValue, glucoseValue, bmi)
                 }
                 override fun onFailure(error: Exception) {
+                    if (isFinishing || isDestroyed) return
                     // si falla la descarga del perfil guardamos sin imc
                     buildAndSaveMetric(currentUserId, weightValue, systolicValue, diastolicValue,
-                        heartRateValue, glucoseValue, notesValue, null)
+                        heartRateValue, glucoseValue, null)
                 }
             })
         } else {
             buildAndSaveMetric(currentUserId, null, systolicValue, diastolicValue,
-                heartRateValue, glucoseValue, notesValue, null)
+                heartRateValue, glucoseValue, null)
         }
     }
 
@@ -116,7 +117,7 @@ class AddMetricActivity : AppCompatActivity() {
      */
     private fun buildAndSaveMetric(
         userId: String, weight: Double?, systolic: Int?, diastolic: Int?,
-        heartRate: Int?, glucose: Double?, notes: String, bmi: Double?
+        heartRate: Int?, glucose: Double?, bmi: Double?
     ) {
         // generamos un id unico y armamos el objeto con todos los campos requeridos
         val newMetricId = metricDao.createDocumentId()
@@ -125,7 +126,6 @@ class AddMetricActivity : AppCompatActivity() {
             patientId = userId,
             timestamp = Timestamp.now(),
             metricType = "General",
-            notes = if (notes.isNotEmpty()) notes else null,
             weight = weight,
             bmi = bmi,
             systolic = systolic,
@@ -137,12 +137,19 @@ class AddMetricActivity : AppCompatActivity() {
         // aqui guardamos la metrica en firebase
         metricDao.save(newMetricId, newMetric, object : OnOperationCompleteListener {
             override fun onSuccess() {
+                if (isFinishing || isDestroyed) return
                 Toast.makeText(this@AddMetricActivity, "Métrica guardada correctamente", Toast.LENGTH_SHORT).show()
-                // programamos el recordatorio para manana a las 9am despues de guardar exitosamente
-                ReminderScheduler.schedule(this@AddMetricActivity, 9, 0)
+                // solo programamos el recordatorio por defecto si el paciente no tiene uno configurado
+                if (ReminderScheduler.getSavedTime(this@AddMetricActivity) == null) {
+                    ReminderScheduler.schedule(this@AddMetricActivity, 9, 0)
+                    Log.d("AddMetricActivity", "ReminderScheduler.schedule(9, 0) ejecutado")
+                } else {
+                    Log.d("AddMetricActivity", "Recordatorio ya configurado, no se sobreescribe")
+                }
                 finish()
             }
             override fun onFailure(error: Exception) {
+                if (isFinishing || isDestroyed) return
                 Toast.makeText(this@AddMetricActivity, "Error al guardar: ${error.message}", Toast.LENGTH_LONG).show()
                 saveMetricButton.isEnabled = true
             }

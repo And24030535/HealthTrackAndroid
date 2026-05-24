@@ -63,6 +63,7 @@ class RegisterActivity : AppCompatActivity() {
      * Abre el DatePickerDialog y guarda la fecha en formato ISO (YYYY-MM-DD).
      */
     private fun openDatePicker() {
+        // abrimos el selector de fecha y guardamos el resultado en formato ISO
         val cal = Calendar.getInstance()
         DatePickerDialog(
             this,
@@ -98,7 +99,20 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         // la altura es opcional pero la necesitamos para calcular el IMC despues
-        val height = heightEditText.text.toString().trim().toDoubleOrNull()
+        val heightRaw = heightEditText.text.toString().trim()
+        val height = heightRaw.toDoubleOrNull()
+
+        // validamos que la altura sea un numero razonable si se ingresa
+        if (heightRaw.isNotEmpty() && (height == null || height <= 0.0 || height > 3.0)) {
+            Toast.makeText(this, "Estatura inválida (usa metros, ej. 1.75)", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // exigimos la fecha de nacimiento para que el doctor tenga la edad del paciente
+        if (selectedBirthDate.isNullOrEmpty()) {
+            Toast.makeText(this, "Por favor selecciona tu fecha de nacimiento", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         // deshabilitamos el boton para evitar doble registro
         registerButton.isEnabled = false
@@ -144,6 +158,7 @@ class RegisterActivity : AppCompatActivity() {
         userDao.save(userId, newUser, object : OnOperationCompleteListener {
 
             override fun onSuccess() {
+                if (isFinishing || isDestroyed) return
                 Toast.makeText(this@RegisterActivity, "Cuenta creada exitosamente", Toast.LENGTH_SHORT).show()
                 // limpiamos el historial de actividades igual que en el login
                 val intent = Intent(this@RegisterActivity, DashboardActivity::class.java).apply {
@@ -160,6 +175,7 @@ class RegisterActivity : AppCompatActivity() {
                 // Revertimos la cuenta de Firebase Auth para evitar dejar cuentas huerfanas.
                 // Si no hacemos esto, el usuario quedaria con acceso Auth pero sin perfil en Firestore.
                 auth.currentUser?.delete()
+                if (isFinishing || isDestroyed) return
                 Toast.makeText(
                     this@RegisterActivity,
                     "Error al guardar el perfil: ${error.message}",

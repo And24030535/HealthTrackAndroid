@@ -30,6 +30,9 @@ class HistoryActivity : AppCompatActivity() {
     // Referencia al listener en tiempo real — se cancela en onDestroy para evitar fugas de memoria
     private var metricsListener: ListenerRegistration? = null
 
+    // Bandera para mostrar el aviso de "sin registros" solo la primera vez
+    private var emptyToastShown = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_history)
@@ -70,8 +73,15 @@ class HistoryActivity : AppCompatActivity() {
             currentUserId,
             object : OnDataLoadedListener<Metric> {
                 override fun onSuccess(data: List<Metric>) {
+                    // evitamos refrescar la lista si la pantalla ya se cerro
+                    if (isFinishing || isDestroyed) return
                     if (data.isEmpty()) {
-                        Toast.makeText(this@HistoryActivity, "Sin registros aún", Toast.LENGTH_SHORT).show()
+                        // si no hay registros limpiamos el adaptador y avisamos al paciente solo una vez
+                        metricsAdapter.updateData(emptyList())
+                        if (!emptyToastShown) {
+                            Toast.makeText(this@HistoryActivity, "Sin registros aún", Toast.LENGTH_SHORT).show()
+                            emptyToastShown = true
+                        }
                     } else {
                         // ordenamos la lista de mas nueva a mas vieja y actualizamos el adaptador
                         val sortedList = data.sortedByDescending { it.timestamp }
@@ -80,6 +90,7 @@ class HistoryActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(error: Exception) {
+                    if (isFinishing || isDestroyed) return
                     Toast.makeText(
                         this@HistoryActivity,
                         "Error al cargar el historial",

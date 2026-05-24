@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.itc.healthtrackandroid.R
 import com.itc.healthtrackandroid.controllers.DashboardActivity
@@ -42,6 +43,9 @@ object NotificationHelper {
      * Muestra la notificacion de recordatorio. Al tocarla abre el panel principal del paciente.
      */
     fun showReminderNotification(context: Context) {
+        // nos aseguramos que el canal exista antes de mostrar la notificacion
+        createChannel(context)
+        Log.d("NotificationHelper", "showReminderNotification llamado")
         // al tocar la notificacion el paciente va directo al dashboard
         val intent = Intent(context, DashboardActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

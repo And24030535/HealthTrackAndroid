@@ -169,33 +169,6 @@
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="18dp"/>
-
-            <!-- Notas -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="NOTAS ADICIONALES"
-                android:textColor="@color/ht_text_secondary"
-                android:textSize="11sp"
-                android:letterSpacing="0.08"
-                android:layout_marginBottom="6dp"/>
-
-            <EditText
-                android:id="@+id/notesEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minLines="3"
-                android:hint="Observaciones, síntomas, contexto..."
-                android:textColorHint="@color/ht_text_hint"
-                android:textColor="@color/ht_text_primary"
-                android:background="@drawable/bg_input_field"
-                android:inputType="textMultiLine"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:gravity="top"
                 android:layout_marginBottom="28dp"/>
 
             <!-- Boton guardar -->

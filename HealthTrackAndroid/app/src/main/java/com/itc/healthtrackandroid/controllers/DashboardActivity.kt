@@ -110,10 +110,12 @@ class DashboardActivity : AppCompatActivity() {
      * Calendar.getInstance() usa automaticamente el huso horario local del dispositivo.
      */
     private fun openTimePicker() {
+        // tomamos la hora actual del telefono como valor inicial del selector
         val calendar      = Calendar.getInstance()
         val currentHour   = calendar.get(Calendar.HOUR_OF_DAY)
         val currentMinute = calendar.get(Calendar.MINUTE)
 
+        // cuando el paciente elige una hora la programamos y actualizamos el boton
         TimePickerDialog(this, { _, hour, minute ->
             ReminderScheduler.schedule(this, hour, minute)
             updateReminderButtonLabel()
@@ -126,6 +128,7 @@ class DashboardActivity : AppCompatActivity() {
      * Actualiza el texto del boton para reflejar la hora del recordatorio activo o el estado inactivo.
      */
     private fun updateReminderButtonLabel() {
+        // mostramos la hora guardada en el boton o el texto por defecto si no hay recordatorio
         val saved = ReminderScheduler.getSavedTime(this)
         reminderButton.text = if (saved != null) {
             val label = String.format("%02d:%02d", saved.first, saved.second)

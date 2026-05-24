@@ -28,6 +28,7 @@ class ColoredMetricAdapter(
      * Se llama desde HistoryActivity cada vez que Firestore emite una actualizacion.
      */
     fun updateData(newMetrics: List<Metric>) {
+        // reemplazamos todos los datos y le avisamos al RecyclerView para que redibuje
         metrics.clear()
         metrics.addAll(newMetrics)
         notifyDataSetChanged()
@@ -42,7 +43,6 @@ class ColoredMetricAdapter(
         val heartRateTextView: TextView = itemView.findViewById(R.id.metricHeartRateTextView)
         val glucoseTextView: TextView   = itemView.findViewById(R.id.metricGlucoseTextView)
         val bmiTextView: TextView       = itemView.findViewById(R.id.metricBmiTextView)
-        val notesTextView: TextView     = itemView.findViewById(R.id.metricNotesTextView)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MetricViewHolder {
@@ -85,15 +85,6 @@ class ColoredMetricAdapter(
         holder.bmiTextView.text = if (bmi != null) {
             "IMC: $bmi"
         } else "IMC: —"
-
-        // Notas: solo se muestran si el paciente las escribio
-        val notes = metric.notes
-        if (!notes.isNullOrBlank()) {
-            holder.notesTextView.visibility = View.VISIBLE
-            holder.notesTextView.text = "Notas: $notes"
-        } else {
-            holder.notesTextView.visibility = View.GONE
-        }
 
         // Franja lateral de color segun los umbrales clinicos.
         // El fondo de la fila se mantiene oscuro fijo; solo la franja cambia de color.
